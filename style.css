@@ -904,3 +904,8 @@ select.form-input {
 .mb-6 { margin-bottom: 24px; }
 .mt-4 { margin-top: 16px; }
 .w-full { width: 100%; }
+
+/* ✅ تأكد أن هذا الكلاس يخفي أي عنصر تماماً */
+.hidden {
+    display: none !important;
+}
