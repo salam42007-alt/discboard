@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DiscBoard — أضف سيرفرك</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="noise-overlay"></div>
+<div class="glow-blob glow-blob-1"></div>
+<div class="glow-blob glow-blob-2"></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <div class="navbar-logo">Disc<span>Board</span></div>
+  </a>
+  <div class="navbar-right">
+    <a href="index.html" class="nav-btn nav-btn-ghost" style="display:flex">
+      ← العودة
+    </a>
+  </div>
+</nav>
+
+<div class="main-content">
+  <div class="form-container">
+
+    <div class="form-header">
+      <h1 class="form-title">أضف <span style="color:var(--cyan)">سيرفرك</span></h1>
+      <p class="form-subtitle">
+        شارك سيرفرك مع الجميع وابدأ في استقبال أعضاء جدد
+      </p>
+    </div>
+
+    <!-- Auth check banner -->
+    <div id="auth-banner" class="hidden"
+         style="background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.3);
+                border-radius:12px;padding:20px 24px;margin-bottom:28px;
+                display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">يجب تسجيل الدخول أولاً</div>
+        <div style="font-size:13px;color:var(--text2)">سجّل دخولك بالديسكورد عشان تقدر ترفع سيرفرك</div>
+      </div>
+      <button class="btn btn-cyber" onclick="handleLogin()">دخول بالديسكورد</button>
+    </div>
+
+    <div class="form-card" id="form-card">
+
+      <form id="add-form" onsubmit="submitForm(event)">
+
+        <!-- Server Name -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="required">*</span> اسم السيرفر
+          </label>
+          <input type="text" id="server-name" class="form-input"
+                 placeholder="مثال: SKULL SERVER" maxlength="60" required/>
+          <div class="form-error" id="err-name">اسم السيرفر مطلوب</div>
+        </div>
+
+        <!-- Invite Link -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="required">*</span> رابط الدعوة (Invite Link)
+          </label>
+          <input type="url" id="invite-link" class="form-input"
+                 placeholder="https://discord.gg/xxxxxxx" required/>
+          <div class="form-hint">تأكد أن الرابط دائم وغير منتهي الصلاحية</div>
+          <div class="form-error" id="err-invite">رابط الدعوة مطلوب ويجب أن يبدأ بـ https://discord.gg/</div>
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="required">*</span> التصنيف
+          </label>
+          <select id="category" class="form-input" required>
+            <option value="" disabled selected>اختر تصنيف...</option>
+            <option value="Gaming">🎮 ألعاب</option>
+            <option value="Anime">🎌 أنمي</option>
+            <option value="Dev">💻 برمجة</option>
+            <option value="Medieval">⚔️ ميديفال</option>
+            <option value="Other">🌐 أخرى</option>
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">الوصف</label>
+          <textarea id="description" class="form-input"
+                    placeholder="صف سيرفرك في جملتين... وش يقدّم وليش يدخله الناس؟"
+                    maxlength="300"></textarea>
+          <div class="form-hint" id="desc-count">0 / 300</div>
+        </div>
+
+        <!-- Image URL -->
+        <div class="form-group">
+          <label class="form-label">رابط أيقونة السيرفر (اختياري)</label>
+          <input type="url" id="image-url" class="form-input"
+                 placeholder="https://..."/>
+          <div class="form-hint">رابط مباشر لصورة PNG أو JPG</div>
+        </div>
+
+        <!-- Preview -->
+        <div id="preview-wrap" class="hidden" style="margin-bottom:22px">
+          <div class="form-label">معاينة البطاقة</div>
+          <div id="card-preview" style="max-width:320px;margin-top:8px"></div>
+        </div>
+
+        <button type="submit" class="btn btn-cyber form-submit" id="submit-btn">
+          🚀 رفع السيرفر
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { supabase }       from './supabase.js';
+import { requireAuth, loginWithDiscord } from './auth.js';
+
+let currentUser = null;
+
+// Check auth
+(async () => {
+  currentUser = await requireAuth(null);
+  if (!currentUser) {
+    document.getElementById('auth-banner').classList.remove('hidden');
+    document.getElementById('form-card').style.opacity = '0.4';
+    document.getElementById('form-card').style.pointerEvents = 'none';
+  }
+})();
+
+window.handleLogin = loginWithDiscord;
+
+// Char count
+document.getElementById('description').addEventListener('input', function() {
+  document.getElementById('desc-count').textContent = `${this.value.length} / 300`;
+});
+
+// Live preview
+['server-name','invite-link','category','description','image-url'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updatePreview);
+});
+
+// ── دالة الأفاتار الملوّن (نفس منطق script.js) ──
+function letterAvatarHTML(name) {
+  const colors = [
+    ['#00d2ff','#003a4d'], ['#3a7bd5','#0a1a3a'], ['#7b5ea7','#1a0e2e'],
+    ['#00e676','#003318'], ['#ff6b6b','#3a0a0a'], ['#ffab40','#3a2200'],
+    ['#26c6da','#003a40'], ['#ec407a','#3a0020'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  const [fg, bg] = colors[Math.abs(hash) % colors.length];
+  return `<span style="display:flex;align-items:center;justify-content:center;
+    width:100%;height:100%;background:${bg};color:${fg};
+    font-size:20px;font-weight:900;font-family:'Cairo',sans-serif;border-radius:inherit">
+    ${name.charAt(0).toUpperCase()}</span>`;
+}
+
+// Regex الرابط الصحيح: https://discord.gg/XXXX
+const DISCORD_INVITE_REGEX = /^https:\/\/discord\.gg\/[a-zA-Z0-9\-]{2,30}$/;
+
+function updatePreview() {
+  const name  = document.getElementById('server-name').value || 'اسم السيرفر';
+  const cat   = document.getElementById('category').value    || 'Other';
+  const desc  = document.getElementById('description').value || 'وصف السيرفر';
+  const img   = document.getElementById('image-url').value.trim();
+
+  const catClass = {Gaming:'cat-gaming',Anime:'cat-anime',Dev:'cat-dev',Medieval:'cat-medieval'}[cat]||'cat-other';
+  const icon = img
+    ? `<img src="${esc(img)}" alt="${esc(name)}"
+          onerror="this.outerHTML=\`${letterAvatarHTML(name).replace(/`/g,"'")}\`"/>`
+    : letterAvatarHTML(name);
+
+  document.getElementById('card-preview').innerHTML = `
+    <div class="server-card" style="cursor:default">
+      <div class="card-banner"><div class="card-icon">${icon}</div></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-name">${esc(name)}</div>
+          <div class="card-category ${catClass}">${esc(cat)}</div>
+        </div>
+        <div class="card-desc">${esc(desc)}</div>
+        <div class="card-footer">
+          <div class="card-members"><span class="members-dot"></span>— عضو</div>
+          <div class="card-join">انضم ←</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('preview-wrap').classList.remove('hidden');
+}
+
+// Submit
+window.submitForm = async function(e) {
+  e.preventDefault();
+  if (!currentUser) { showToast('سجّل دخولك أولاً', 'error'); return; }
+
+  const name   = document.getElementById('server-name').value.trim();
+  const invite = document.getElementById('invite-link').value.trim();
+  const cat    = document.getElementById('category').value;
+  const desc   = document.getElementById('description').value.trim();
+  const imgUrl = document.getElementById('image-url').value.trim();
+
+  // Validate
+  let valid = true;
+  if (!name)   { showErr('err-name', true);   valid = false; }
+  else           showErr('err-name', false);
+
+  if (!invite || !DISCORD_INVITE_REGEX.test(invite)) {
+    showErr('err-invite', true); valid = false;
+  } else showErr('err-invite', false);
+
+  if (!valid) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '⏳ جاري الرفع...';
+  btn.disabled = true;
+
+  const { error } = await supabase.from('servers').insert([{
+    server_name:  name,
+    invite_link:  invite,
+    category:     cat,
+    description:  desc || null,
+    image_url:    imgUrl || null,
+    owner_id:     currentUser.id,
+  }]);
+
+  btn.textContent = '🚀 رفع السيرفر';
+  btn.disabled = false;
+
+  if (error) {
+    showToast('فشل الرفع: ' + error.message, 'error');
+    return;
+  }
+
+  showToast('تم رفع السيرفر بنجاح! 🎉', 'success');
+  setTimeout(() => window.location.href = 'index.html', 1500);
+};
+
+function showErr(id, show) {
+  document.getElementById(id).classList.toggle('show', show);
+}
+
+window.showToast = function(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  c.appendChild(t); setTimeout(() => t.remove(), 3500);
+};
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
