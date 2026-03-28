@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DiscBoard — لوحة التحكم</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="noise-overlay"></div>
+<div class="grid-bg"></div>
+<div class="glow-blob glow-blob-1"></div>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <button class="nav-mobile-menu" id="menu-btn" onclick="toggleSidebar()">☰</button>
+    <a href="index.html" class="navbar-logo" style="text-decoration:none">Disc<span>Board</span></a>
+    <span style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-right:8px">/ DASHBOARD</span>
+  </div>
+  <div class="navbar-right" style="display:flex;align-items:center;gap:12px">
+    <div id="user-info" style="display:flex;align-items:center;gap:10px">
+      <div id="nav-avatar" class="avatar-placeholder">A</div>
+      <span id="nav-name" style="font-size:14px;font-weight:600">...</span>
+    </div>
+    <button class="nav-btn nav-btn-ghost btn-sm" onclick="handleLogout()">خروج</button>
+  </div>
+</nav>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar mobile-hidden" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">القائمة</div>
+    <div class="sidebar-link active" onclick="showSection('overview')">
+      <span class="sidebar-icon">📊</span>
+      <span>نظرة عامة</span>
+    </div>
+    <div class="sidebar-link" onclick="showSection('servers')">
+      <span class="sidebar-icon">🌐</span>
+      <span>السيرفرات</span>
+      <span class="sidebar-badge" id="sidebar-count">0</span>
+    </div>
+    <div class="sidebar-link" onclick="showSection('tickets')">
+      <span class="sidebar-icon">🎫</span>
+      <span>التذاكر</span>
+      <span class="sidebar-badge" style="background:rgba(255,171,64,0.15);color:var(--amber);border-color:rgba(255,171,64,0.3)">جديد</span>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">إجراءات</div>
+    <a href="add-server.html" class="sidebar-link">
+      <span class="sidebar-icon">➕</span>
+      <span>أضف سيرفر</span>
+    </a>
+    <a href="index.html" class="sidebar-link">
+      <span class="sidebar-icon">🏠</span>
+      <span>الموقع الرئيسي</span>
+    </a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section">
+    <div style="padding:12px 8px;font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace">
+      <div style="margin-bottom:4px">STATUS: <span style="color:var(--green)">● ONLINE</span></div>
+      <div>DB: Supabase</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main-content">
+<div class="dashboard-layout">
+
+  <!-- ═══ SECTION: OVERVIEW ═══ -->
+  <div id="section-overview">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:24px">
+      نظرة عامة 📊
+    </h2>
+
+    <!-- Stat cards -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🌐</div>
+        <div class="stat-value" id="stat-servers">—</div>
+        <div class="stat-label">إجمالي السيرفرات</div>
+        <div class="stat-sub">في قاعدة البيانات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-value" id="stat-owners">—</div>
+        <div class="stat-label">أصحاب السيرفرات</div>
+        <div class="stat-sub">مستخدمون مسجلون</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-value" id="stat-tickets">—</div>
+        <div class="stat-label">التذاكر المفتوحة</div>
+        <div class="stat-sub">تحتاج مراجعة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" id="stat-today">—</div>
+        <div class="stat-label">أُضيف اليوم</div>
+        <div class="stat-sub">سيرفر جديد</div>
+      </div>
+    </div>
+
+    <!-- Recent servers -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">⚡ آخر السيرفرات المضافة</div>
+        <button class="btn btn-outline btn-sm" onclick="showSection('servers')">عرض الكل</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>السيرفر</th>
+              <th>التصنيف</th>
+              <th>تاريخ الإضافة</th>
+              <th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:32px">جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION: SERVERS ═══ -->
+  <div id="section-servers" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+      <h2 style="font-size:22px;font-weight:700">السيرفرات 🌐</h2>
+      <a href="add-server.html" class="btn btn-cyber btn-sm">+ أضف سيرفر</a>
+    </div>
+
+    <!-- Filter -->
+    <div class="search-bar mb-6" style="max-width:100%">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="dash-search" placeholder="ابحث..." oninput="filterDashServers()"/>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">قائمة السيرفرات</div>
+        <div style="font-size:12px;color:var(--text3);font-family:'Share Tech Mono',monospace" id="table-count">0 سيرفر</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>السيرفر</th>
+              <th>التصنيف</th>
+              <th>الوصف</th>
+              <th>التاريخ</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="servers-tbody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION: TICKETS ═══ -->
+  <div id="section-tickets" class="hidden">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:24px">التذاكر 🎫</h2>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">طلبات الأعضاء</div>
+        <span style="font-size:12px;color:var(--green);font-family:'Share Tech Mono',monospace">● LIVE</span>
+      </div>
+      <div class="ticket-list" id="ticket-list">
+        <!-- Demo tickets (ربطها بـ Supabase حسب نظامك) -->
+        <div class="ticket-item">
+          <div class="ticket-status open"></div>
+          <div class="ticket-body">
+            <div class="ticket-title">طلب إضافة سيرفر — لم يظهر في القائمة</div>
+            <div class="ticket-meta">من: Ahmed99 — منذ 10 دقائق — #1042</div>
+          </div>
+          <button class="btn btn-outline btn-sm">حل</button>
+        </div>
+        <div class="ticket-item">
+          <div class="ticket-status pending"></div>
+          <div class="ticket-body">
+            <div class="ticket-title">تعديل وصف السيرفر</div>
+            <div class="ticket-meta">من: Zeno — منذ ساعة — #1041</div>
+          </div>
+          <button class="btn btn-outline btn-sm">رد</button>
+        </div>
+        <div class="ticket-item">
+          <div class="ticket-status closed"></div>
+          <div class="ticket-body">
+            <div class="ticket-title">رابط الدعوة منتهي</div>
+            <div class="ticket-meta">من: ShadowX — منذ 3 ساعات — #1040</div>
+          </div>
+          <button class="btn btn-outline btn-sm" disabled style="opacity:0.4">مغلق</button>
+        </div>
+        <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">
+          💡 اربط هذا القسم بجدول <code style="color:var(--cyan)">tickets</code> في Supabase لعرض التذاكر الحقيقية
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bottom-nav-item active" id="bnav-overview" onclick="showSection('overview')">
+      <span class="icon">📊</span><span>عامة</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-servers" onclick="showSection('servers')">
+      <span class="icon">🌐</span><span>السيرفرات</span>
+    </button>
+    <button class="bottom-nav-item" id="bnav-tickets" onclick="showSection('tickets')">
+      <span class="icon">🎫</span><span>تذاكر</span>
+    </button>
+    <a href="index.html" class="bottom-nav-item">
+      <span class="icon">🏠</span><span>الموقع</span>
+    </a>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Delete modal -->
+<div id="delete-modal" class="hidden" style="
+  position:fixed;inset:0;background:rgba(0,0,0,0.8);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;backdrop-filter:blur(6px)">
+  <div style="background:var(--card);border:1px solid var(--border);
+              border-radius:12px;padding:32px 28px;max-width:400px;width:90%;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px">حذف السيرفر؟</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:24px">
+      هذا الإجراء لا يمكن التراجع عنه
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn btn-danger" onclick="confirmDelete()">نعم، احذف</button>
+      <button class="btn btn-outline" onclick="closeDeleteModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase }      from './supabase.js';
+import { requireAuth, logout, getDiscordProfile } from './auth.js';
+
+let currentUser = null;
+let allServers  = [];
+let deleteId    = null;
+
+// ── Init ──
+(async () => {
+  currentUser = await requireAuth('index.html');
+  if (!currentUser) return;
+
+  const profile = getDiscordProfile(currentUser);
+  document.getElementById('nav-name').textContent = profile.name;
+  if (profile.avatar) {
+    document.getElementById('nav-avatar').outerHTML = `<img src="${profile.avatar}" class="avatar" id="nav-avatar"/>`;
+  } else {
+    document.getElementById('nav-avatar').textContent = profile.name[0].toUpperCase();
+  }
+
+  await loadAll();
+  subscribeRealtime();
+})();
+
+async function loadAll() {
+  await Promise.all([loadServers(), loadStats()]);
+}
+
+// ── Servers ──
+async function loadServers() {
+  const { data, error } = await supabase
+    .from('servers').select('*').order('created_at', { ascending: false });
+
+  if (error) { showToast('خطأ في التحميل', 'error'); return; }
+  allServers = data || [];
+
+  document.getElementById('sidebar-count').textContent = allServers.length;
+  document.getElementById('table-count').textContent   = allServers.length + ' سيرفر';
+
+  renderRecentTable(allServers.slice(0, 5));
+  renderFullTable(allServers);
+}
+
+function renderRecentTable(servers) {
+  const tbody = document.getElementById('recent-tbody');
+  if (!servers.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:32px">لا توجد سيرفرات بعد</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = servers.map(s => rowHTML(s, false)).join('');
+}
+
+function renderFullTable(servers) {
+  const tbody = document.getElementById('servers-tbody');
+  if (!servers.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">لا توجد سيرفرات</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = servers.map(s => rowHTML(s, true)).join('');
+}
+
+function rowHTML(s, full) {
+  const catClass = {Gaming:'cat-gaming',Anime:'cat-anime',Dev:'cat-dev',Medieval:'cat-medieval'}[s.category]||'cat-other';
+  const date = new Date(s.created_at).toLocaleDateString('ar', {year:'numeric',month:'short',day:'numeric'});
+  const icon = s.image_url
+    ? `<img src="${esc(s.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:9px"/>`
+    : `<span style="font-size:14px;font-weight:700;color:var(--cyan)">${s.server_name.charAt(0).toUpperCase()}</span>`;
+
+  const descCell = full ? `<td style="max-width:200px;color:var(--text2);font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(s.description||'—')}</td>` : '';
+  const actionsCell = full
+    ? `<td class="td-actions">
+        <a href="${esc(s.invite_link)}" target="_blank" class="btn btn-outline btn-sm">زيارة</a>
+        <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${s.id})">حذف</button>
+       </td>`
+    : `<td><a href="${esc(s.invite_link)}" target="_blank" class="btn btn-outline btn-sm">زيارة</a></td>`;
+
+  return `<tr>
+    <td>
+      <div class="td-server">
+        <div class="td-icon">${icon}</div>
+        <div>
+          <div class="td-name">${esc(s.server_name)}</div>
+        </div>
+      </div>
+    </td>
+    <td><span class="badge ${catClass}">${esc(s.category||'Other')}</span></td>
+    ${descCell}
+    <td style="color:var(--text3);font-size:12px;font-family:'Share Tech Mono',monospace;white-space:nowrap">${date}</td>
+    ${actionsCell}
+  </tr>`;
+}
+
+// ── Stats ──
+async function loadStats() {
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+
+  const [totalRes, todayRes] = await Promise.all([
+    supabase.from('servers').select('*', { count:'exact', head:true }),
+    supabase.from('servers').select('*', { count:'exact', head:true }).gte('created_at', todayStart.toISOString()),
+  ]);
+
+  document.getElementById('stat-servers').textContent = totalRes.count ?? 0;
+  document.getElementById('stat-today').textContent   = todayRes.count ?? 0;
+
+  const { data: owners } = await supabase.from('servers').select('owner_id');
+  const unique = new Set((owners||[]).map(o => o.owner_id));
+  document.getElementById('stat-owners').textContent = unique.size;
+
+  // Tickets (placeholder)
+  document.getElementById('stat-tickets').textContent = 3;
+}
+
+// ── Realtime ──
+function subscribeRealtime() {
+  supabase.channel('dash-watch')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'servers' }, payload => {
+      allServers.unshift(payload.new);
+      renderRecentTable(allServers.slice(0,5));
+      renderFullTable(allServers);
+      document.getElementById('sidebar-count').textContent = allServers.length;
+      loadStats();
+      showToast('سيرفر جديد أُضيف!', 'success');
+    })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'servers' }, payload => {
+      allServers = allServers.filter(s => s.id !== payload.old.id);
+      renderRecentTable(allServers.slice(0,5));
+      renderFullTable(allServers);
+      document.getElementById('sidebar-count').textContent = allServers.length;
+    })
+    .subscribe();
+}
+
+// ── Delete ──
+window.openDeleteModal = function(id) {
+  deleteId = id;
+  document.getElementById('delete-modal').classList.remove('hidden');
+};
+window.closeDeleteModal = function() {
+  deleteId = null;
+  document.getElementById('delete-modal').classList.add('hidden');
+};
+window.confirmDelete = async function() {
+  if (!deleteId) return;
+  const { error } = await supabase.from('servers').delete().eq('id', deleteId);
+  closeDeleteModal();
+  if (error) showToast('فشل الحذف: ' + error.message, 'error');
+  else showToast('تم حذف السيرفر', 'success');
+};
+
+// ── Section navigation ──
+const sections = ['overview','servers','tickets'];
+window.showSection = function(name) {
+  sections.forEach(s => {
+    document.getElementById(`section-${s}`)?.classList.toggle('hidden', s !== name);
+    document.getElementById(`bnav-${s}`)?.classList.toggle('active', s === name);
+  });
+  document.querySelectorAll('.sidebar-link').forEach((el, i) => {
+    if (['overview','servers','tickets'][i] === name) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+  closeSidebar();
+};
+
+// ── Filter ──
+window.filterDashServers = function() {
+  const q = document.getElementById('dash-search').value.toLowerCase();
+  const filtered = allServers.filter(s =>
+    s.server_name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q)
+  );
+  renderFullTable(filtered);
+  document.getElementById('table-count').textContent = filtered.length + ' سيرفر';
+};
+
+// ── Sidebar mobile ──
+window.toggleSidebar = function() {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('open');
+  sidebar.classList.toggle('mobile-hidden');
+  overlay.classList.toggle('show');
+};
+window.closeSidebar = function() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar').classList.add('mobile-hidden');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+};
+
+// ── Logout ──
+window.handleLogout = logout;
+
+// ── Toast ──
+window.showToast = function(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  c.appendChild(t); setTimeout(() => t.remove(), 3500);
+};
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
