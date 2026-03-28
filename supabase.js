@@ -8,8 +8,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-export const SUPABASE_URL  = 'https://XXXXXXXXXXXXXXXX.supabase.co'; // ← غيّر
-export const SUPABASE_ANON = 'YOUR_ANON_KEY_HERE';                   // ← غيّر
+export const SUPABASE_URL  = 'https://voagykakapoxiycbaxbm.supabase.co'; // ← غيّر
+export const SUPABASE_ANON = 'sb_publishable_Q6hATwZZS6C6_vCKyIRIkQ_VXhWQy8M';                   // ← غيّر
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
