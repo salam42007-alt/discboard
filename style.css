@@ -412,6 +412,24 @@ input, textarea, select { font-family: 'Cairo', sans-serif; }
   transition: var(--transition);
   position: relative;
   cursor: pointer;
+  /* ✅ Entrance animation */
+  animation: cardFadeIn 0.45s ease backwards;
+}
+
+/* تأخير تدريجي لكل كارت (stagger effect) */
+.server-card:nth-child(1)  { animation-delay: 0.05s; }
+.server-card:nth-child(2)  { animation-delay: 0.10s; }
+.server-card:nth-child(3)  { animation-delay: 0.15s; }
+.server-card:nth-child(4)  { animation-delay: 0.20s; }
+.server-card:nth-child(5)  { animation-delay: 0.25s; }
+.server-card:nth-child(6)  { animation-delay: 0.30s; }
+.server-card:nth-child(7)  { animation-delay: 0.35s; }
+.server-card:nth-child(8)  { animation-delay: 0.40s; }
+.server-card:nth-child(n+9){ animation-delay: 0.45s; }
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .server-card::before {
