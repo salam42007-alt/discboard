@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DiscBoard — اكتشف سيرفرات الديسكورد</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="noise-overlay"></div>
+<div class="grid-bg"></div>
+<div class="glow-blob glow-blob-1"></div>
+<div class="glow-blob glow-blob-2"></div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <div class="navbar-logo">Disc<span>Board</span></div>
+  </a>
+  <div class="navbar-right nav-desktop">
+    <div id="user-block" class="hidden"></div>
+    <button id="login-btn" class="nav-btn nav-btn-ghost" onclick="handleLogin()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.021-.04.001-.088-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+      دخول بالديسكورد
+    </button>
+    <a id="add-server-btn" href="add-server.html" class="nav-btn nav-btn-primary hidden">
+      + أضف سيرفرك
+    </a>
+  </div>
+  <!-- Mobile hamburger -->
+  <div class="flex gap-2 nav-mobile-actions" style="display:none;align-items:center;gap:8px">
+    <div id="user-block-m" class="hidden"></div>
+    <button id="login-btn-m" class="nav-btn nav-btn-ghost btn-sm hidden" onclick="handleLogin()" style="display:flex">
+      دخول
+    </button>
+    <a id="add-btn-m" href="add-server.html" class="nav-btn nav-btn-primary btn-sm hidden">+</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="main-content">
+  <section class="hero">
+    <div class="hero-tag">
+      <div class="hero-dot"></div>
+      <span class="font-mono">DISCORD SERVER LIST</span>
+    </div>
+    <h1 class="hero-title">
+      اكتشف<br/>
+      <span class="highlight">أفضل السيرفرات</span>
+    </h1>
+    <p class="hero-subtitle">
+      منصة متخصصة لعرض وإيجاد سيرفرات الديسكورد العربية —
+      ألعاب، برمجة، أنمي، وأكثر
+    </p>
+    <div class="hero-actions">
+      <a href="#servers" class="btn btn-cyber">
+        استعرض السيرفرات
+        <span>↓</span>
+      </a>
+      <button class="btn btn-outline" onclick="handleLogin()">
+        أضف سيرفرك مجاناً
+      </button>
+    </div>
+  </section>
+
+  <!-- ── Servers Section ── -->
+  <section class="section" id="servers">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">السيرفرات <span id="server-count">0</span></h2>
+        <p class="text-muted mt-4" style="font-size:14px">اكتشف وانضم للمجتمعات</p>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="ابحث عن سيرفر..."/>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-cat="all">الكل</button>
+      <button class="filter-tab" data-cat="Gaming">🎮 ألعاب</button>
+      <button class="filter-tab" data-cat="Anime">🎌 أنمي</button>
+      <button class="filter-tab" data-cat="Dev">💻 برمجة</button>
+      <button class="filter-tab" data-cat="Medieval">⚔️ ميديفال</button>
+      <button class="filter-tab" data-cat="Other">🌐 أخرى</button>
+    </div>
+
+    <!-- Cards grid -->
+    <div id="servers-grid" class="cards-grid">
+      <!-- loaded by script.js -->
+    </div>
+  </section>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Mobile bottom bar (simple) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-items">
+    <a href="index.html" class="bottom-nav-item active">
+      <span class="icon">🏠</span>
+      <span>الرئيسية</span>
+    </a>
+    <a href="add-server.html" class="bottom-nav-item">
+      <span class="icon">➕</span>
+      <span>أضف</span>
+    </a>
+    <button class="bottom-nav-item" onclick="handleLogin()">
+      <span class="icon">👤</span>
+      <span>دخول</span>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile nav fix -->
+<style>
+@media (max-width: 768px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile-actions { display: flex !important; }
+}
+</style>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
