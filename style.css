@@ -169,9 +169,13 @@ input, textarea, select { font-family: 'Cairo', sans-serif; }
 
 /* ══════════════════════════════════════════
    SIDEBAR (dashboard only)
+   ✅ إصلاح: إضافة left: auto لمنع التداخل
 ══════════════════════════════════════════ */
 .sidebar {
-  position: fixed; top: var(--navbar-h); right: 0;
+  position: fixed;
+  top: var(--navbar-h);
+  right: 0;        /* ✅ جهة اليمين للموقع العربي */
+  left: auto;      /* ✅ تأكيد أن اليسار تلقائي */
   width: var(--sidebar-w);
   height: calc(100vh - var(--navbar-h));
   background: rgba(13, 16, 23, 0.96);
@@ -830,11 +834,13 @@ select.form-input {
 
   /* Sidebar becomes overlay on mobile */
   .sidebar {
-    transform: translateX(100%);
+    transform: translateX(100%); /* ✅ يختفي لجهة اليمين */
     width: 260px;
     box-shadow: -4px 0 30px rgba(0,0,0,0.5);
   }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar.open {
+    transform: translateX(0); /* ✅ يظهر من اليمين */
+  }
 
   /* Sidebar overlay */
   .sidebar-overlay {
@@ -905,7 +911,10 @@ select.form-input {
 .mt-4 { margin-top: 16px; }
 .w-full { width: 100%; }
 
-/* ✅ تأكد أن هذا الكلاس يخفي أي عنصر تماماً */
+/* ══════════════════════════════════════════
+   ✅ إخفاء العناصر — يمنع ظهور Modal تلقائياً
+   يجب أن يكون في النهاية ليتغلب على أي display آخر
+══════════════════════════════════════════ */
 .hidden {
-    display: none !important;
+  display: none !important;
 }
