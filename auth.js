@@ -10,7 +10,8 @@ export async function loginWithDiscord() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'discord',
     options: {
-      redirectTo: window.location.origin + '/dashboard.html',
+      // ✅ التعديل هنا: نضع الرابط الكامل والمباشر لصفحة الداشبورد
+      redirectTo: 'https://salam42007-alt.github.io/discboard/dashboard.html',
       scopes: 'identify guilds',
     }
   });
